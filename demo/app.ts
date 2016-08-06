@@ -1,7 +1,7 @@
 import * as express from "express";
 import { Application, Request, Response } from "express";
 import { OK } from "http-status-codes";
-import * as autoRouter from "auto-router";
+import * as scaffoldRouter from "express-mongoose-scaffold";
 import { connect } from "mongoose";
 import { render as formRenderer } from "cms-forms";
 import { render as gridRenderer } from "cms-grids";
@@ -20,8 +20,8 @@ app.get('/', (request : Request, response : Response) => {
     response.status(OK).send("Hello World");
 });
 
-app.use('/categories', autoRouter(CategoriesModel));
-app.use('/foods', autoRouter(FoodsModel));
+app.use('/categories', scaffoldRouter(CategoriesModel));
+app.use('/foods', scaffoldRouter(FoodsModel));
 
 app.use(formRenderer);
 app.use(gridRenderer);
