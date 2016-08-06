@@ -20,8 +20,9 @@ app.get('/', (request : Request, response : Response) => {
     response.status(OK).send("Hello World");
 });
 
-app.use('/categories', scaffoldRouter(CategoriesModel));
-app.use('/foods', scaffoldRouter(FoodsModel));
+app.use('/admin/categories', scaffoldRouter(CategoriesModel).adminRouter);
+app.use('/admin/foods', scaffoldRouter(FoodsModel).adminRouter);
+app.use('/api/foods', scaffoldRouter(FoodsModel).apiRouter);
 
 app.use(formRenderer);
 app.use(gridRenderer);
