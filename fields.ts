@@ -9,7 +9,7 @@ export class FieldConstructor {
 
     public getFields() : Field[] {
         let fields : Field[] = Object.keys(this.Model.schema.paths)
-            .filter(path=> !path.startsWith("_"))
+            .filter(path => !path.startsWith("_") && !this.Model.schema.paths[path].options.hide)
             .map((path) => {
                 let val = this.Model.schema.paths[path];
                 let field : Field = {};

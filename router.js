@@ -53,7 +53,7 @@ class AutoRouter {
             grid.rows = list.map((item) => {
                 let row = new cms_grids_1.Row();
                 row.columns = fieldsToDisplay.map(field => {
-                    if (field.ref) {
+                    if (field.ref && item[field.name]) {
                         return item[field.name]['name'] || item[field.name]['title'] || "";
                     }
                     return item[field.name] || "";

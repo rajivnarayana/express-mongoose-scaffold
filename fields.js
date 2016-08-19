@@ -8,7 +8,7 @@ class FieldConstructor {
     }
     getFields() {
         let fields = Object.keys(this.Model.schema.paths)
-            .filter(path => !path.startsWith("_"))
+            .filter(path => !path.startsWith("_") && !this.Model.schema.paths[path].options.hide)
             .map((path) => {
             let val = this.Model.schema.paths[path];
             let field = {};

@@ -44,7 +44,7 @@ export class AutoRouter {
         grid.rows = list.map((item) => {
             let row: Row = new Row();
             row.columns = fieldsToDisplay.map(field => {
-                if (field.ref) {
+                if (field.ref && item[field.name]) {
                     return item[field.name]['name'] || item[field.name]['title'] || "";
                 }
                 return item[field.name] || ""

@@ -6,4 +6,4 @@ let schema = new Schema({
     taste: { type: String, enum: ['sweet', 'sour', 'bitter', 'tangy'] },
     category: { type: Schema.Types.ObjectId, required: true, ref: 'categories' },
 });
-export var model = model('food-items', schema);
+export var model = Model('food-items', schema);
