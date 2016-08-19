@@ -36,6 +36,11 @@ export class AutoRouter {
 
     public async list(req: Request, res: Response, next) {
         let list = await this.odm.list();
+        res.grid = this.constructResults(list);
+        next();
+    }
+
+    public constructResults(list) {
         const grid = new Grid();
         grid.header = "<h2>All Items</h2><a class='btn btn-primary' href='" + this.relativeURL('/new') + "'>New</a>";
         let fieldsToDisplay : Field [] = this.fields.filter(field => field.type != WidgetTypes.Submit);
@@ -60,8 +65,7 @@ export class AutoRouter {
             ];
         return row;
         })
-        res.grid = grid;
-        next();
+        return grid;
     }
 
     private async onPrepareNewForm(req, res, next) {
@@ -76,6 +80,40 @@ export class AutoRouter {
             }
         }
         next();
+    }
+
+    private async onPrepareSearchForm(req, res, next) {
+        res.form = new Form();
+        res.form.method = "GET";
+        res.form.header = "<h2>Search</h2>";
+        res.form.action = this.relativeURL('/search');
+        res.form.field = this.fields;
+        for (let field of res.form.fields) {
+            if (field.type == WidgetTypes.Select && field.ref) {
+                field.options = await this.odm.listAsSelectOptions(field.ref);
+            }
+        }
+        next();
+    }
+
+    private async onSearchForm(req, res, next) {
+        if (!req.query)  { 
+            return next()
+        }
+        try {
+            let results = await this.odm.search(req.query); 
+            res.grid = this.constructResults(results);
+            next();
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    /**
+     * Populate res.html with both the form and grid.
+     */
+    private asynd renderSearchResultsAndForm(req, res, next) {
+
     }
 
     private async onPrepareEditForm(req, res, next) {
@@ -135,6 +173,11 @@ export class AutoRouter {
 
         router.get(['/','/list'], this.list.bind(this));
 
+        router.route('/search')
+            .all(this.onPrepareEditForm.bind(this))
+            .get(this.onSearchForm.bind(this))
+            .all(this.renderSearchResultsAndForm.bind(this));
+        
         router.route('/new')
             .all(this.onPrepareNewForm.bind(this))
             .get(this.emptyMiddleware.bind(this))

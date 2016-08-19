@@ -17,10 +17,14 @@ class ODM {
             .filter(path => !path.startsWith("_"))
             .filter(path => typeof this.Model.schema.paths[path].options.ref !== 'undefined');
     }
-    list() {
+    getPathsToSearch() {
+        return Object.keys(this.Model.schema.paths)
+            .filter(path => !path.startsWith("_"));
+    }
+    list(options = {}) {
         return __awaiter(this, void 0, Promise, function* () {
             let paths = this.getPathsToPopulate();
-            return yield this.Model.find({}).populate(paths.join(', ')).exec();
+            return yield this.Model.find(options).populate(paths.join(', ')).exec();
         });
     }
     add(doc) {
@@ -69,6 +73,33 @@ class ODM {
                 prev[doc.id] = doc.name || doc.title;
                 return prev;
             }, {});
+        });
+    }
+    search(body) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let searchQuery = {};
+            let pathsToSearch = this.getPathsToSearch();
+            Object.keys(body)
+                .filter(key => pathsToSearch.indexOf(key) != undefined)
+                .reduce((prev, key) => {
+                let val = this.Model.schema.paths[key];
+                if (val.options.type == String) {
+                    // if (val.enumValues && val.enumValues.length) {
+                    // }
+                    prev[key] = new RegExp(body[key], 'i');
+                }
+                else if (val.options.type == Boolean) {
+                    prev[key] = JSON.parse(body[key]);
+                }
+                else if (val.options.type == Number) {
+                    prev[key] = JSON.parse(body[key]);
+                }
+                else if (val.options.type == mongoose_1.Schema.ObjectId && val.options.ref) {
+                    prev[key] = body[key];
+                }
+                return prev;
+            }, searchQuery);
+            return yield this.list(searchQuery);
         });
     }
 }

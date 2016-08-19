@@ -1,4 +1,4 @@
-import { Model as MongooseModel, Types, Document, model } from "mongoose";
+import { Model as MongooseModel, Types, Document, model,Schema } from "mongoose";
 
 export class ODM {
     constructor(private Model : MongooseModel) {
@@ -11,9 +11,14 @@ export class ODM {
 
     }
 
-    public async list() : Promise<Document[]> {
+    private getPathsToSearch() {
+        return Object.keys(this.Model.schema.paths)
+            .filter(path=> !path.startsWith("_"))
+    }
+
+    public async list(options = {}) : Promise<Document[]> {
         let paths = this.getPathsToPopulate();
-        return await this.Model.find({}).populate(paths.join(', ')).exec();
+        return await this.Model.find(options).populate(paths.join(', ')).exec();
     }
 
     public async add(doc) : Promise<Document> {
@@ -58,5 +63,30 @@ export class ODM {
             prev[doc.id] = doc.name || doc.title;
             return prev;
         }, {})
+    }
+
+    public async search(body) {
+        let searchQuery = {};
+        let pathsToSearch = this.getPathsToSearch();
+        Object.keys(body)
+            .filter(key => pathsToSearch.indexOf(key) != undefined)
+            .reduce((prev, key)=>{
+                let val = this.Model.schema.paths[key];
+                if (val.options.type == String) {
+                    // if (val.enumValues && val.enumValues.length) {
+                    // }
+                    prev[key] = new RegExp(body[key],'i');
+                } else if (val.options.type == Boolean) {
+                    prev[key] = JSON.parse(body[key])
+                }
+                else if (val.options.type == Number) {
+                    prev[key] = JSON.parse(body[key])
+                }
+                else if (val.options.type == Schema.ObjectId && val.options.ref) {
+                    prev[key] =body[key]
+                }                                  
+            return prev;
+        },searchQuery);
+        return await this.list(searchQuery);
     }
 }
