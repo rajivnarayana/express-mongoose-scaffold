@@ -112,7 +112,7 @@ export class AutoRouter {
     /**
      * Populate res.html with both the form and grid.
      */
-    private asynd renderSearchResultsAndForm(req, res, next) {
+    private async renderSearchResultsAndForm(req, res, next) {
 
     }
 

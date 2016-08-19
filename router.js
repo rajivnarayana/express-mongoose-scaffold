@@ -17,10 +17,6 @@ class AutoRouter {
         this.fields = fields;
         this.odm = odm;
         this.relativeURL = path => path;
-        /**
-         * Populate res.html with both the form and grid.
-         */
-        this.asynd = renderSearchResultsAndForm(req, res, next);
     }
     beforeAll(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -125,104 +121,104 @@ class AutoRouter {
             }
         });
     }
+    /**
+     * Populate res.html with both the form and grid.
+     */
+    renderSearchResultsAndForm(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+        });
+    }
+    onPrepareEditForm(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.onPrepareNewForm(req, res, () => {
+                res.form.action = this.relativeURL(`/${req.params.id}/edit`);
+                next();
+            });
+        });
+    }
+    onGetEditForm(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            res.form.setValues(req.object.toJSON());
+            next();
+        });
+    }
+    onPostNewForm(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.odm.add(req.body);
+                req.flash('success', 'Saved successfuly');
+                res.redirect(this.relativeURL('/'));
+            }
+            catch (error) {
+                res.html.errors = error;
+                res.form.setValues(req.body);
+                next();
+            }
+        });
+    }
+    onPostEditForm(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.odm.update(req.params.id, req.body);
+                req.flash('success', 'Saved successfuly');
+                res.redirect(this.relativeURL('/'));
+            }
+            catch (error) {
+                res.html.errors = error;
+                res.form.setValues(req.body);
+                next();
+            }
+        });
+    }
+    onDelete(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.odm.remove(req.params.id);
+            res.redirect(this.relativeURL('/'));
+        });
+    }
+    emptyMiddleware(req, res, next) {
+        next();
+    }
+    getRouter() {
+        let router = express_1.Router();
+        router.use(bodyParser.urlencoded({ extended: false }));
+        // router.use(flash());
+        router.use(this.beforeAll.bind(this));
+        router.param('id', this.onParamId.bind(this));
+        router.get(['/', '/list'], this.list.bind(this));
+        router.route('/search')
+            .all(this.onPrepareEditForm.bind(this))
+            .get(this.onSearchForm.bind(this))
+            .all(this.renderSearchResultsAndForm.bind(this));
+        router.route('/new')
+            .all(this.onPrepareNewForm.bind(this))
+            .get(this.emptyMiddleware.bind(this))
+            .post(this.onPostNewForm.bind(this));
+        router.route('/:id/edit').all((req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            if (!req.object) {
+                return next();
+            }
+            this.onPrepareEditForm(req, res, next);
+        })).get((req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            if (!req.object) {
+                return next;
+            }
+            this.onGetEditForm(req, res, next);
+        })).post((req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            if (!req.object) {
+                return next();
+            }
+            this.onPostEditForm(req, res, next);
+        }));
+        router.get('/:id/delete', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            if (!req.object) {
+                return next();
+            }
+            this.onDelete(req, res, next);
+        }));
+        router.use(this.afterAll.bind(this));
+        return router;
+    }
 }
 exports.AutoRouter = AutoRouter;
-{
-}
-async;
-onPrepareEditForm(req, res, next);
-{
-    this.onPrepareNewForm(req, res, () => {
-        res.form.action = this.relativeURL(`/${req.params.id}/edit`);
-        next();
-    });
-}
-async;
-onGetEditForm(req, res, next);
-{
-    res.form.setValues(req.object.toJSON());
-    next();
-}
-async;
-onPostNewForm(req, res, next);
-{
-    try {
-        await;
-        this.odm.add(req.body);
-        req.flash('success', 'Saved successfuly');
-        res.redirect(this.relativeURL('/'));
-    }
-    catch (error) {
-        res.html.errors = error;
-        res.form.setValues(req.body);
-        next();
-    }
-}
-async;
-onPostEditForm(req, res, next);
-{
-    try {
-        await;
-        this.odm.update(req.params.id, req.body);
-        req.flash('success', 'Saved successfuly');
-        res.redirect(this.relativeURL('/'));
-    }
-    catch (error) {
-        res.html.errors = error;
-        res.form.setValues(req.body);
-        next();
-    }
-}
-async;
-onDelete(req, res, next);
-{
-    await;
-    this.odm.remove(req.params.id);
-    res.redirect(this.relativeURL('/'));
-}
-emptyMiddleware(req, res, next);
-{
-    next();
-}
-getRouter();
-{
-    let router = express_1.Router();
-    router.use(bodyParser.urlencoded({ extended: false }));
-    // router.use(flash());
-    router.use(this.beforeAll.bind(this));
-    router.param('id', this.onParamId.bind(this));
-    router.get(['/', '/list'], this.list.bind(this));
-    router.route('/search')
-        .all(this.onPrepareEditForm.bind(this))
-        .get(this.onSearchForm.bind(this))
-        .all(this.renderSearchResultsAndForm.bind(this));
-    router.route('/new')
-        .all(this.onPrepareNewForm.bind(this))
-        .get(this.emptyMiddleware.bind(this))
-        .post(this.onPostNewForm.bind(this));
-    router.route('/:id/edit').all((req, res, next) => __awaiter(this, void 0, void 0, function* () {
-        if (!req.object) {
-            return next();
-        }
-        this.onPrepareEditForm(req, res, next);
-    })).get((req, res, next) => __awaiter(this, void 0, void 0, function* () {
-        if (!req.object) {
-            return next;
-        }
-        this.onGetEditForm(req, res, next);
-    })).post((req, res, next) => __awaiter(this, void 0, void 0, function* () {
-        if (!req.object) {
-            return next();
-        }
-        this.onPostEditForm(req, res, next);
-    }));
-    router.get('/:id/delete', (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-        if (!req.object) {
-            return next();
-        }
-        this.onDelete(req, res, next);
-    }));
-    router.use(this.afterAll.bind(this));
-    return router;
-}
 //# sourceMappingURL=router.js.map
