@@ -18,7 +18,7 @@ export class AutoRouter {
         req.flash = req.flash || (() => {})
         res.locals.flash = res.locals.flash || { shift : () => undefined};
         this.relativeURL = path => req.baseUrl + path;
-        res.html = {};
+        res.html = res.html || {};
         next();
     }
 
